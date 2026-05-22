@@ -59,11 +59,14 @@ router.post('/login', async (req, res) => {
     if (!valid)
       return res.status(400).json({ error: 'Invalid email or password' });
 
-    // Get their own board
+    // Get their personal board. It is the first board created at registration.
     const board = await pool.query(
-      'SELECT id FROM boards WHERE owner_id=$1 LIMIT 1',
+      'SELECT id FROM boards WHERE owner_id=$1 ORDER BY id ASC LIMIT 1',
       [user.rows[0].id]
     );
+    if (!board.rows.length) {
+      return res.status(500).json({ error: 'No personal board found for this account' });
+    }
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS board_members (
@@ -78,13 +81,23 @@ router.post('/login', async (req, res) => {
     `);
     await pool.query(`ALTER TABLE board_members ADD COLUMN IF NOT EXISTS access JSONB DEFAULT '{}'::jsonb`);
 
-    // Get all boards they are member of
+    // Get boards they joined through invites.
     const sharedBoards = await pool.query(
       `SELECT bm.board_id, b.name, bm.role, bm.access
        FROM board_members bm
        JOIN boards b ON b.id = bm.board_id
        WHERE bm.user_id=$1`,
       [user.rows[0].id]
+    );
+
+    // Get team boards they created themselves. These are not in board_members,
+    // so they must be returned separately or they disappear after logout.
+    const ownedTeamBoards = await pool.query(
+      `SELECT id, name
+       FROM boards
+       WHERE owner_id=$1 AND id<>$2
+       ORDER BY id ASC`,
+      [user.rows[0].id, board.rows[0].id]
     );
 
     const token = jwt.sign(
@@ -98,12 +111,22 @@ router.post('/login', async (req, res) => {
       user: { id: user.rows[0].id, name: user.rows[0].name, email },
       boardId: board.rows[0].id,
       sharedBoards: sharedBoards.rows.map(b => b.board_id),
-      teamBoards: sharedBoards.rows.map(b => ({
+      teamBoards: [
+        ...ownedTeamBoards.rows.map(b => ({
+          id: b.id,
+          name: b.name || 'Team Board',
+          role: 'owner',
+          owned: true,
+          access: null
+        })),
+        ...sharedBoards.rows.map(b => ({
         id: b.board_id,
         name: b.name || 'Team Board',
         role: b.role || 'editor',
+        owned: false,
         access: b.access || null
-      }))
+        }))
+      ]
     });
   } catch (err) {
     console.error(err);

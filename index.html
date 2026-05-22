@@ -1975,11 +1975,18 @@ function mergeServerTeamBoards(serverBoards) {
     if (existing) {
       existing.id = boardId;
       existing.name = sb.name || existing.name || 'Team Board';
-      existing.owned = false;
+      existing.owned = sb.owned === true || sb.role === 'owner';
       existing.local = false;
       existing.role = sb.role || existing.role || 'editor';
     } else {
-      boards.push({ id: boardId, name: sb.name || 'Team Board', local: false, owned: false, role: sb.role || 'editor', createdAt: new Date().toISOString() });
+      boards.push({
+        id: boardId,
+        name: sb.name || 'Team Board',
+        local: false,
+        owned: sb.owned === true || sb.role === 'owner',
+        role: sb.role || 'editor',
+        createdAt: new Date().toISOString()
+      });
     }
     accessMap[boardId] = access;
   });
