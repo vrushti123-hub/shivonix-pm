@@ -2121,10 +2121,13 @@ function openEditTeamBoardModal(boardId) {
   const emailEl = document.getElementById('etb-email');
   const roleEl = document.getElementById('etb-role');
   const deleteBtn = document.getElementById('etb-delete-board');
+  const leaveBtn = document.getElementById('etb-leave-board');
+  const owner = userOwnsTeamBoard(board);
   if (nameEl) nameEl.value = board.name || '';
   if (emailEl) emailEl.value = '';
   if (roleEl) roleEl.value = 'editor';
-  if (deleteBtn) deleteBtn.style.display = userOwnsTeamBoard(board) ? '' : 'none';
+  if (deleteBtn) deleteBtn.style.display = owner ? '' : 'none';
+  if (leaveBtn) leaveBtn.style.display = owner ? 'none' : '';
   fillAccessCheckboxes('etb-access-', getBoardAccessPolicy(boardId));
   openModal('modal-edit-team-board');
 }
@@ -2209,6 +2212,47 @@ async function deleteTeamBoard() {
   renderTeamBoardsList();
   mobShowPage('dashboard');
   toast('Team board deleted');
+}
+
+async function leaveTeamBoard() {
+  const boardId = boardIdKey(localStorage.getItem('editing_team_board_id'));
+  if (!boardId) { toast('Team board not found', 'error'); return; }
+  if (boardId === getMyBoardId()) { toast('You cannot leave My Board', 'error'); return; }
+
+  const boards = getTeamBoards();
+  const board = boards.find(b => boardIdKey(b.id) === boardId);
+  if (!board) { toast('Team board not found', 'error'); return; }
+  if (userOwnsTeamBoard(board)) {
+    toast('Owner can delete the board instead', 'error');
+    return;
+  }
+
+  const name = board.name || 'this team board';
+  if (!confirm('Leave "' + name + '"? It will be removed from your Team Board list.')) return;
+
+  if (!board.local && !boardId.startsWith('team_')) {
+    const data = await apiCall('DELETE', '/api/boards/' + encodeURIComponent(boardId) + '/leave');
+    if (!data || !data.success) {
+      toast((data && data.error) || 'Could not leave board', 'error');
+      return;
+    }
+  }
+
+  const remaining = boards.filter(b => boardIdKey(b.id) !== boardId);
+  saveTeamBoards(remaining);
+
+  const accessMap = getStoredAccessMap();
+  delete accessMap[boardId];
+  saveStoredAccessMap(accessMap);
+
+  closeModal('modal-edit-team-board');
+  clearDashboardForFreshBoard();
+  localStorage.setItem('shivonix_board', getMyBoardId());
+  await loadAllData();
+  applyAccessControl(getCurrentAccess());
+  renderTeamBoardsList();
+  mobShowPage('dashboard');
+  toast('You left the team board');
 }
 
 // ── Switch to MY board ────────────────────────────────
@@ -4057,6 +4101,7 @@ updateBadges = function() {
 
       <div class="team-modal-actions">
         <button class="btn btn-danger" id="etb-delete-board" onclick="deleteTeamBoard()" style="margin-right:auto;">Delete Board</button>
+        <button class="btn btn-danger" id="etb-leave-board" onclick="leaveTeamBoard()" style="display:none;margin-right:auto;">Leave Board</button>
         <button class="btn btn-ghost" onclick="saveEditedTeamBoard(false)">Save Changes</button>
         <button class="btn btn-primary" onclick="saveEditedTeamBoard(true)">Save & Send Invite</button>
       </div>

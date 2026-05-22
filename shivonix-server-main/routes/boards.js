@@ -193,6 +193,35 @@ router.delete('/members/:userId', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+router.delete('/:boardId/leave', async (req, res) => {
+  const boardId = req.params.boardId;
+  try {
+    await ensureBoardInviteSchema();
+
+    if (String(req.user.homeBoardId || '') === String(boardId)) {
+      return res.status(400).json({ error: 'You cannot leave your personal board' });
+    }
+
+    const owner = await pool.query(
+      'SELECT id FROM boards WHERE id=$1 AND owner_id=$2',
+      [boardId, req.user.id]
+    );
+    if (owner.rows.length) {
+      return res.status(400).json({ error: 'Board owner cannot leave. Delete the board instead.' });
+    }
+
+    const result = await pool.query(
+      'DELETE FROM board_members WHERE board_id=$1 AND user_id=$2 RETURNING board_id',
+      [boardId, req.user.id]
+    );
+    if (!result.rows.length) {
+      return res.status(404).json({ error: 'You are not a member of this board' });
+    }
+
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 router.delete('/:boardId', async (req, res) => {
   const boardId = req.params.boardId;
   try {
