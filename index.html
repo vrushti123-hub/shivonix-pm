@@ -2926,7 +2926,7 @@ async function saveTask() {
 }
 
 function editTask(id) {
-  const t = db.tasks.find(t => t.id === id);
+  const t = db.tasks.find(t => t.id == id);
   if (!t) return;
   document.getElementById('task-modal-title').textContent = 'Edit Task';
   document.getElementById('task-edit-id').value = t.id;
@@ -3026,18 +3026,26 @@ async function saveClient() {
 }
 
 function editClient(id) {
-  const c = db.clients.find(c => c.id === id);
+  const c = db.clients.find(c => c.id == id);
   if (!c) return;
-  document.getElementById('client-modal-title').textContent = 'Edit Client';
-  document.getElementById('client-edit-id').value = c.id;
-  ['name','company','email','phone','address','reference','notes'].forEach(f => {
-    document.getElementById('c-'+f).value = c[f] || '';
-  });
+  openModal('modal-client');
+  setTimeout(() => {
+    document.getElementById('client-modal-title').textContent = 'Edit Client';
+    document.getElementById('client-edit-id').value = c.id;
+    ['name','company','email','phone','address','reference','notes'].forEach(f => {
+      const el = document.getElementById('c-'+f);
+      if (el) el.value = c[f] || '';
+    });
   document.getElementById('c-budget').value = c.budget || '';
   document.getElementById('c-deadline').value = c.deadline || '';
   document.getElementById('c-status').value = c.status || 'Active';
-  document.getElementById('c-project').value = c.project || '';
-  openModal('modal-client');
+    document.getElementById('c-budget').value = c.budget || 0;
+    document.getElementById('c-deadline').value = c.deadline || '';
+    document.getElementById('c-status').value = c.status || 'Active';
+    document.getElementById('c-project').value = c.project || '';
+    const ns = document.getElementById('client-notify-section');
+    if (ns) ns.style.display = 'none';
+  }, 50);
 }
 
 async function deleteClient(id) {
@@ -3889,7 +3897,7 @@ function exportProject(id) {
 }
 
 function exportClient(id) {
-  const c = db.clients.find(c => c.id === id);
+  const c = db.clients.find(c => c.id == id);
   if (!c) return;
   const proj = db.projects.find(p => p.id === c.project);
   const invs = db.invoices.filter(inv => inv.clientId === c.id);
