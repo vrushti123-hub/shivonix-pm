@@ -3825,10 +3825,10 @@ function exportData() {
   const projRows = [['Name','Client','Phase','Start','End','Status','Description'],
     ...db.projects.map(p => [p.name, p.client||'', p.phase||'', p.start||'', p.end||'', p.status||'', p.desc||''])];
 
-  const taskRows = [['Title','Project','Status','Priority','Assignee','Due Date','Module'],
+  const taskRows = [['Title','Project','Status','Priority','Assignee','Due Date','Module','Description'],
     ...db.tasks.map(t => {
       const proj = db.projects.find(p => p.id === t.project);
-      return [t.title, proj?.name||'', t.status, t.priority, t.assignee||'', t.due||'', t.module||''];
+      return [t.title, proj?.name||'', t.status, t.priority, t.assignee||'', t.due||'', t.module||'', t.desc||''];
     })];
 
   const clientRows = [['Name','Company','Email','Phone','Budget','Deadline','Status','Project','Notes'],
