@@ -1065,7 +1065,7 @@ html, body {
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Task</th><th>Project</th><th>Priority</th><th>Assignee</th><th>Due Date</th><th>Status</th><th>Time</th><th>Actions</th></tr></thead>
+        <thead><tr><th>Task</th><th>Project</th><th>Priority</th><th>Assignee</th><th>Due Date</th><th>Status</th><th>Description</th><th>Actions</th></tr></thead>
         <tbody id="tasks-tbody">
           <tr class="empty-row"><td colspan="8">No tasks yet.</td></tr>
         </tbody>
@@ -2966,7 +2966,7 @@ function renderTasks(filter) {
       <td data-label="Assignee">${t.assignee ? `<div class="avatar" style="font-size:10px">${t.assignee.substring(0,2).toUpperCase()}</div>` : '—'}</td>
       <td data-label="Due" style="font-size:12px;${isDue(t.due)?'color:var(--red)':''}">${t.due || '—'}</td>
       <td data-label="Status">${taskStatusBadge(t.status)}</td>
-      <td data-label="Time" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text3)">${mins ? formatDuration(mins) : '—'}</td>
+      <td data-label="Description" style="font-size:12px;color:var(--text3);max-width:200px;">${t.desc || '—'}</td>
       <td>
         <div style="display:flex;gap:6px;">
           <button class="btn btn-ghost btn-sm" onclick="editTask('${t.id}')">✏️</button>
@@ -3043,6 +3043,8 @@ function editClient(id) {
     const ns = document.getElementById('client-notify-section');
     if (ns) ns.style.display = 'none';
   }, 50);
+  openModal('modal-client');
+>>>>>>> 1d0ad228c77acebc198cb739bee3f780f660477c
 }
 
 async function deleteClient(id) {
