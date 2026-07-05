@@ -2926,7 +2926,11 @@ async function saveTask() {
 }
 
 function editTask(id) {
+<<<<<<< HEAD
   const t = db.tasks.find(t => t.id == id);
+=======
+  const t = db.tasks.find(t => t.id === id);
+>>>>>>> 1d0ad228c77acebc198cb739bee3f780f660477c
   if (!t) return;
   document.getElementById('task-modal-title').textContent = 'Edit Task';
   document.getElementById('task-edit-id').value = t.id;
@@ -2960,7 +2964,7 @@ function renderTasks(filter) {
     const entries = db.timeEntries.filter(e => e.taskId === t.id);
     const mins = entries.reduce((a,e) => a + (e.duration || 0), 0);
     return `<tr>
-      <td data-label="Task"><b style="font-size:13px">${t.title}</b>${t.module ? `<span style="font-size:10px;background:var(--bg4);color:var(--text3);padding:1px 6px;border-radius:10px;margin-left:6px">${t.module}</span>` : ''}</td>
+      <td data-label="Task"><b style="font-size:13px">${t.title}</b>${t.module ? `<span style="font-size:10px;background:var(--bg4);color:var(--text3);padding:1px 6px;border-radius:10px;margin-left:6px">${t.module}</span>` : ''}${t.desc ? `<div style="font-size:11px;color:var(--text3);margin-top:2px;">${t.desc}</div>` : ''}</td>
       <td data-label="Project">${proj ? `<span style="color:var(--accent2)">${proj.name}</span>` : '—'}</td>
       <td data-label="Priority">${priorityBadge(t.priority)}</td>
       <td data-label="Assignee">${t.assignee ? `<div class="avatar" style="font-size:10px">${t.assignee.substring(0,2).toUpperCase()}</div>` : '—'}</td>
@@ -3026,6 +3030,7 @@ async function saveClient() {
 }
 
 function editClient(id) {
+<<<<<<< HEAD
   const c = db.clients.find(c => c.id == id);
   if (!c) return;
   openModal('modal-client');
@@ -3046,6 +3051,20 @@ function editClient(id) {
     const ns = document.getElementById('client-notify-section');
     if (ns) ns.style.display = 'none';
   }, 50);
+=======
+  const c = db.clients.find(c => c.id === id);
+  if (!c) return;
+  document.getElementById('client-modal-title').textContent = 'Edit Client';
+  document.getElementById('client-edit-id').value = c.id;
+  ['name','company','email','phone','address','reference','notes'].forEach(f => {
+    document.getElementById('c-'+f).value = c[f] || '';
+  });
+  document.getElementById('c-budget').value = c.budget || '';
+  document.getElementById('c-deadline').value = c.deadline || '';
+  document.getElementById('c-status').value = c.status || 'Active';
+  document.getElementById('c-project').value = c.project || '';
+  openModal('modal-client');
+>>>>>>> 1d0ad228c77acebc198cb739bee3f780f660477c
 }
 
 async function deleteClient(id) {
@@ -3897,7 +3916,11 @@ function exportProject(id) {
 }
 
 function exportClient(id) {
+<<<<<<< HEAD
   const c = db.clients.find(c => c.id == id);
+=======
+  const c = db.clients.find(c => c.id === id);
+>>>>>>> 1d0ad228c77acebc198cb739bee3f780f660477c
   if (!c) return;
   const proj = db.projects.find(p => p.id === c.project);
   const invs = db.invoices.filter(inv => inv.clientId === c.id);
