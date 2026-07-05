@@ -1060,7 +1060,7 @@ html, body {
           <option value="In Progress">In Progress</option>
           <option value="Done">Done</option>
         </select>
-        <button class="btn btn-primary" onclick="openModal('modal-task')">+ Add Task</button>
+        <button class="btn btn-primary" onclick="openModal('modal-task')">+ Add Task</button><button class="btn btn-ghost btn-sm" onclick="exportTasks()">⬇ Export Tasks</button>
       </div>
     </div>
     <div class="table-wrap">
@@ -1077,7 +1077,7 @@ html, body {
   <div class="content page" id="page-kanban">
     <div class="section-header">
       <div class="section-title">Kanban Board</div>
-      <button class="btn btn-primary" onclick="openModal('modal-task')">+ Add Task</button>
+      <button class="btn btn-primary" onclick="openModal('modal-task')">+ Add Task</button><button class="btn btn-ghost btn-sm" onclick="exportTasks()">⬇ Export Tasks</button>
     </div>
     <div class="kanban-wrap">
       <div class="kanban-col">
@@ -3854,6 +3854,16 @@ function exportData() {
 }
 
 function exportCSV() { exportData(); }
+
+function exportTasks() {
+  const taskRows = [["Title","Project","Status","Priority","Assignee","Due Date","Module","Description"],
+    ...db.tasks.map(t => {
+      const proj = db.projects.find(p => p.id === t.project);
+      return [t.title, proj?.name||"", t.status, t.priority, t.assignee||"", t.due||"", t.module||"", t.desc||""];
+    })];
+  XLSXGen.download("shivonix-tasks-export.xlsx", [{ name: "Tasks", rows: taskRows }]);
+  toast("Tasks exported! 📊");
+}
 
 function exportProject(id) {
   const p = db.projects.find(p => p.id === id);
